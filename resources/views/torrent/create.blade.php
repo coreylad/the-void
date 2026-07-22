@@ -695,13 +695,46 @@
     @section('sidebar')
         <section class="panelV2">
             <h2 class="panel__heading">
-                <i class="{{ config('other.font-awesome') }} fa-info"></i>
-                {{ __('common.info') }}
+                <i class="{{ config('other.font-awesome') }} fa-rss"></i>
+                {{ __('torrent.announce-url') }}
             </h2>
             <div class="panel__body">
-                <a href="{{ config('other.upload-guide_url') }}">
-                    {{ __('torrent.announce-url-desc-url') }}
-                </a>
+                <p class="form__group">
+                    <input
+                        type="text"
+                        class="form__text"
+                        id="announce-url"
+                        value="{{ $announceUrl }}"
+                        readonly
+                    />
+                    <label class="form__label form__label--floating" for="announce-url">
+                        {{ __('torrent.announce-url') }}
+                    </label>
+                    <span class="form__hint">
+                        {{ __('torrent.announce-url-desc') }}
+                    </span>
+                </p>
+                <p class="form__group">
+                    <button
+                        type="button"
+                        class="form__button form__button--filled"
+                        x-data="upload"
+                        data-announce-url="{{ $announceUrl }}"
+                        x-on:click="copy()"
+                    >
+                        <i class="{{ config('other.font-awesome') }} fa-copy"></i>
+                        {{ __('common.copy') }}
+                    </button>
+                </p>
+                <p class="form__group">
+                    <a
+                        href="{{ config('other.upload-guide_url') }}"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        {{ __('torrent.announce-url-desc-url') }}
+                    </a>
+                </p>
             </div>
         </section>
     @endsection

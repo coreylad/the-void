@@ -21,6 +21,7 @@ return [
     'abbrev-years' => 'Y ',
     'about' => 'About us',
     'account' => 'Account',
+    'copy' => 'Copy',
     'achievement-title' => 'Awesome',
     'achievement-unlocked' => 'You unlocked <span class="badge-extra">:name</span> achievement',
     'active' => 'Active',

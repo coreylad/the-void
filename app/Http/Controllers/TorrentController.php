@@ -523,6 +523,7 @@ class TorrentController extends Controller
             'regions'      => Region::query()->orderBy('position')->get(),
             'distributors' => Distributor::query()->orderBy('name')->get(),
             'user'         => $request->user(),
+            'announceUrl'  => route('announce', ['passkey' => $user->passkey]),
             'category_id'  => $request->category_id ?? Category::query()->first()->id,
             'title'        => urldecode((string) $request->title),
             'imdb'         => $request->imdb,
