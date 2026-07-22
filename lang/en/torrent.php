@@ -181,6 +181,8 @@ return [
     'satisfied_in'             => 'Satisfied in',
     'say-thanks'               => 'Please remember to say <b>thanks</b> and <b>seed</b> for as long as you can',
     'search'                   => 'Search',
+    'browse'                   => 'Browse',
+    'browse-desc'              => 'Select a category to browse its torrents.',
     'search-by-name'           => 'Search by name',
     'season-number'            => 'Season number',
     'season'                   => 'Season',
