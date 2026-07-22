@@ -85,63 +85,72 @@
     </section>
 @endsection
 
-@section('styles')
+@section('javascripts')
     <style nonce="{{ HDVinnie\SecureHeaders\SecureHeaders::nonce('style') }}">
         .category-tiles {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.5rem;
         }
 
         .category-tile {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1rem;
-            border-radius: 8px;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.04);
-            color: inherit;
+            color: #fff;
             text-decoration: none;
-            transition: background 0.15s ease, transform 0.15s ease;
+            transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
         }
 
         .category-tile:hover {
-            background: rgba(255, 255, 255, 0.09);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(255, 255, 255, 0.20);
+            transform: translateY(-3px);
         }
 
         .category-tile__media {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 96px;
-            height: 96px;
-            margin-bottom: 0.5rem;
+            width: 110px;
+            height: 110px;
+            margin-bottom: 0.75rem;
         }
 
         .category-tile__image {
-            max-width: 96px;
-            max-height: 96px;
+            max-width: 110px;
+            max-height: 110px;
             object-fit: contain;
-            border-radius: 6px;
+            border-radius: 8px;
         }
 
         .category-tile__icon {
-            font-size: 3rem;
-            line-height: 96px;
+            font-size: 3.5rem;
+            line-height: 1;
+            color: #6ea8fe;
         }
 
         .category-tile__label {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
             font-weight: 600;
+            font-size: 1.05rem;
         }
 
         .category-tile__count {
             font-size: 0.8rem;
-            opacity: 0.7;
+            font-weight: 400;
+            opacity: 0.65;
+            background: rgba(255, 255, 255, 0.10);
+            padding: 0.05rem 0.45rem;
+            border-radius: 999px;
         }
     </style>
 @endsection
