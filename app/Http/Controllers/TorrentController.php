@@ -536,21 +536,6 @@ class TorrentController extends Controller
     }
 
     /**
-     * Browse Torrents By Category.
-     */
-    public function browse(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-    {
-        $categories = Category::query()
-            ->orderBy('position')
-            ->withCount('torrents')
-            ->get();
-
-        return view('torrent.browse', [
-            'categories' => $categories,
-        ]);
-    }
-
-    /**
      * Upload A Torrent.
      */
     public function store(StoreTorrentRequest $request): \Illuminate\Http\RedirectResponse
