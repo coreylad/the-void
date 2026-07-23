@@ -26,6 +26,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Intervention\Image\Facades\Image;
 
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\BannerControllerTest
@@ -70,17 +71,20 @@ class BannerController extends Controller
         abort_if($realPath === false, 400);
 
         $filename = Str::uuid().'.'.self::detectExtension($realPath);
+        $isAnimated = AnimatedImage::isAnimated($realPath);
 
-        $image->storeAs('', $filename, 'site-banners');
+        self::storeResized($image, $realPath, $filename, $isAnimated);
 
-        SiteBanner::query()->create([
+        $banner = SiteBanner::query()->create([
             ...$request->validated(),
             'image_path'  => $filename,
-            'is_animated' => AnimatedImage::isAnimated($realPath),
+            'is_animated' => $isAnimated,
             'is_active'   => $request->boolean('is_active'),
             'position'    => $request->integer('position'),
             'created_by'  => $request->user()?->id,
         ]);
+
+        cache()->forget("site-banners:{$banner->slot}");
 
         return to_route('staff.banners.index')
             ->with('success', 'Site banner successfully added');
@@ -102,6 +106,8 @@ class BannerController extends Controller
      */
     public function update(UpdateSiteBannerRequest $request, SiteBanner $banner): RedirectResponse
     {
+        $previousSlot = $banner->slot;
+
         $attributes = [
             ...$request->validated(),
             'is_active' => $request->boolean('is_active'),
@@ -118,15 +124,20 @@ class BannerController extends Controller
             abort_if($realPath === false, 400);
 
             $filename = Str::uuid().'.'.self::detectExtension($realPath);
-            $image->storeAs('', $filename, 'site-banners');
+            $isAnimated = AnimatedImage::isAnimated($realPath);
+
+            self::storeResized($image, $realPath, $filename, $isAnimated);
 
             Storage::disk('site-banners')->delete($banner->image_path);
 
             $attributes['image_path'] = $filename;
-            $attributes['is_animated'] = AnimatedImage::isAnimated($realPath);
+            $attributes['is_animated'] = $isAnimated;
         }
 
         $banner->update($attributes);
+
+        cache()->forget("site-banners:{$previousSlot}");
+        cache()->forget("site-banners:{$banner->slot}");
 
         return to_route('staff.banners.index')
             ->with('success', 'Site banner successfully modified');
@@ -140,8 +151,39 @@ class BannerController extends Controller
         Storage::disk('site-banners')->delete($banner->image_path);
         $banner->delete();
 
+        cache()->forget("site-banners:{$banner->slot}");
+
         return to_route('staff.banners.index')
             ->with('success', 'Site banner successfully deleted');
+    }
+
+    /**
+     * Store the uploaded banner image, resizing it to fit within the
+     * configured maximum dimensions when it isn't animated. Animated
+     * images (APNG/GIF) are stored unmodified since resizing them would
+     * discard their animation frames.
+     */
+    private static function storeResized(\Illuminate\Http\UploadedFile $image, string $realPath, string $filename, bool $isAnimated): void
+    {
+        if ($isAnimated) {
+            $image->storeAs('', $filename, 'site-banners');
+
+            return;
+        }
+
+        $path = Storage::disk('site-banners')->path($filename);
+
+        Image::make($realPath)
+            ->resize(
+                config('branding.banner_max_width'),
+                config('branding.banner_max_height'),
+                function ($constraint): void {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                }
+            )
+            ->encode(self::detectExtension($realPath), 100)
+            ->save($path);
     }
 
     /**
