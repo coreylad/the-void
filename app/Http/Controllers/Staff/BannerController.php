@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Staff;
 
-use App\Helpers\Apng;
+use App\Helpers\AnimatedImage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\StoreSiteBannerRequest;
 use App\Http\Requests\Staff\UpdateSiteBannerRequest;
@@ -64,18 +64,19 @@ class BannerController extends Controller
         abort_unless($image !== null && $image->isValid(), 400);
 
         // Ignore the client supplied filename/extension entirely and force a
-        // random name with a fixed .png extension to prevent extension
+        // random name with the real detected extension to prevent extension
         // spoofing / double-extension attacks.
-        $filename = Str::uuid().'.png';
         $realPath = $image->getRealPath();
         abort_if($realPath === false, 400);
+
+        $filename = Str::uuid().'.'.self::detectExtension($realPath);
 
         $image->storeAs('', $filename, 'site-banners');
 
         SiteBanner::query()->create([
             ...$request->validated(),
             'image_path'  => $filename,
-            'is_animated' => Apng::isAnimated($realPath),
+            'is_animated' => AnimatedImage::isAnimated($realPath),
             'is_active'   => $request->boolean('is_active'),
             'position'    => $request->integer('position'),
             'created_by'  => $request->user()?->id,
@@ -116,13 +117,13 @@ class BannerController extends Controller
             $realPath = $image->getRealPath();
             abort_if($realPath === false, 400);
 
-            $filename = Str::uuid().'.png';
+            $filename = Str::uuid().'.'.self::detectExtension($realPath);
             $image->storeAs('', $filename, 'site-banners');
 
             Storage::disk('site-banners')->delete($banner->image_path);
 
             $attributes['image_path'] = $filename;
-            $attributes['is_animated'] = Apng::isAnimated($realPath);
+            $attributes['is_animated'] = AnimatedImage::isAnimated($realPath);
         }
 
         $banner->update($attributes);
@@ -141,5 +142,26 @@ class BannerController extends Controller
 
         return to_route('staff.banners.index')
             ->with('success', 'Site banner successfully deleted');
+    }
+
+    /**
+     * Determine the real file extension ('png' or 'gif') from an uploaded
+     * image's binary signature. The GenuineImage validation rule guarantees
+     * the file is one of these two types before this is called.
+     */
+    private static function detectExtension(string $realPath): string
+    {
+        $handle = fopen($realPath, 'rb');
+
+        if ($handle === false) {
+            return 'png';
+        }
+
+        $signature = fread($handle, 8);
+        fclose($handle);
+
+        return str_starts_with((string) $signature, 'GIF87a') || str_starts_with((string) $signature, 'GIF89a')
+            ? 'gif'
+            : 'png';
     }
 }

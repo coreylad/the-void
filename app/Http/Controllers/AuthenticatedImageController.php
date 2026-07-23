@@ -114,11 +114,14 @@ class AuthenticatedImageController extends Controller
 
         abort_unless(file_exists($path), 404);
 
-        // The content type is forced regardless of the stored file's contents
-        // so a validated-but-crafted PNG can never be served as HTML/script.
+        // The content type is forced (based on the extension we ourselves
+        // generated at upload time, not client input) so a validated file
+        // can never be served as HTML/script regardless of its contents.
+        $contentType = str_ends_with($siteBanner->image_path, '.gif') ? 'image/gif' : 'image/png';
+
         return response()->file($path, [
             ...self::HEADERS,
-            'Content-Type'           => 'image/png',
+            'Content-Type'           => $contentType,
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

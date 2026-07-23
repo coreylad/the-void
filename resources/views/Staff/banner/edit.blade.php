@@ -142,10 +142,10 @@
                 </p>
                 <p class="form__group">
                     <label for="image">
-                        Replace banner image (optional, PNG only, animated PNG/APNG supported, max
-                        {{ number_format(config('branding.max_upload_kb') / 1024, 1) }} MB)
+                        Replace banner image (optional, PNG or GIF, animated APNG/GIF supported,
+                        max {{ number_format(config('branding.max_upload_kb') / 1024, 1) }} MB)
                     </label>
-                    <input id="image" class="form__file" type="file" name="image" accept=".png" />
+                    <input id="image" class="form__file" type="file" name="image" accept=".png,.gif" />
                 </p>
                 <p class="form__group">
                     <button class="form__button form__button--filled">

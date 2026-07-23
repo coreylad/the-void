@@ -22,13 +22,20 @@ use Illuminate\Http\UploadedFile;
 use Override;
 
 /**
- * Verifies that an uploaded file is a genuine PNG image by checking its
- * binary signature and true image type, rather than trusting the client
+ * Verifies that an uploaded file is a genuine PNG or GIF image by checking
+ * its binary signature and true image type, rather than trusting the client
  * supplied extension or MIME type. This blocks polyglot/renamed uploads.
  */
-class GenuinePng implements ValidationRule
+class GenuineImage implements ValidationRule
 {
     private const string PNG_SIGNATURE = "\x89PNG\x0d\x0a\x1a\x0a";
+
+    /**
+     * @param list<'png'|'gif'> $allowed
+     */
+    public function __construct(private readonly array $allowed = ['png', 'gif'])
+    {
+    }
 
     #[Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -58,16 +65,20 @@ class GenuinePng implements ValidationRule
         $signature = fread($handle, 8);
         fclose($handle);
 
-        if ($signature !== self::PNG_SIGNATURE) {
-            $fail('The :attribute must be a genuine PNG image.');
+        $isPng = $signature === self::PNG_SIGNATURE;
+        $isGif = str_starts_with((string) $signature, 'GIF87a') || str_starts_with((string) $signature, 'GIF89a');
+
+        if (($isPng && !\in_array('png', $this->allowed, true)) || ($isGif && !\in_array('gif', $this->allowed, true)) || (!$isPng && !$isGif)) {
+            $fail('The :attribute must be a genuine PNG or GIF image.');
 
             return;
         }
 
         $imageInfo = @getimagesize($path);
+        $expectedType = $isPng ? \IMAGETYPE_PNG : \IMAGETYPE_GIF;
 
-        if ($imageInfo === false || ($imageInfo[2] ?? null) !== \IMAGETYPE_PNG) {
-            $fail('The :attribute must be a genuine PNG image.');
+        if ($imageInfo === false || ($imageInfo[2] ?? null) !== $expectedType) {
+            $fail('The :attribute must be a genuine PNG or GIF image.');
         }
     }
 }

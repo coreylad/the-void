@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Staff;
 
-use App\Rules\GenuinePng;
+use App\Rules\GenuineImage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -80,9 +80,9 @@ class StoreSiteBannerRequest extends FormRequest
             'image' => [
                 'required',
                 'file',
-                'mimes:png',
+                'mimes:png,gif',
                 'max:'.config('branding.max_upload_kb'),
-                new GenuinePng(),
+                new GenuineImage(),
             ],
         ];
     }
