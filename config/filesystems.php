@@ -122,6 +122,11 @@ return [
             'root'   => storage_path('app/images/playlists/images'),
         ],
 
+        'site-banners' => [
+            'driver' => 'local',
+            'root'   => storage_path('app/images/site-banners'),
+        ],
+
         'subtitle-files' => [
             'driver' => 'local',
             'root'   => storage_path('app/files/subtitles/files'),

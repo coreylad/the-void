@@ -20,6 +20,7 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\Playlist;
 use App\Models\Scopes\ApprovedScope;
+use App\Models\SiteBanner;
 use App\Models\Torrent;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -105,5 +106,20 @@ class AuthenticatedImageController extends Controller
         abort_unless(file_exists($path), 404);
 
         return response()->file($path, self::HEADERS);
+    }
+
+    public function siteBannerImage(SiteBanner $siteBanner): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $path = Storage::disk('site-banners')->path($siteBanner->image_path);
+
+        abort_unless(file_exists($path), 404);
+
+        // The content type is forced regardless of the stored file's contents
+        // so a validated-but-crafted PNG can never be served as HTML/script.
+        return response()->file($path, [
+            ...self::HEADERS,
+            'Content-Type'           => 'image/png',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }

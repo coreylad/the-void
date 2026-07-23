@@ -117,6 +117,7 @@ Route::middleware(SetLanguage::class)->group(function (): void {
             Route::get('/article-images/{article}', [App\Http\Controllers\AuthenticatedImageController::class, 'articleImage'])->name('article_image');
             Route::get('/category-images/{category}', [App\Http\Controllers\AuthenticatedImageController::class, 'categoryImage'])->name('category_image');
             Route::get('/playlist-images/{playlist}', [App\Http\Controllers\AuthenticatedImageController::class, 'playlistImage'])->name('playlist_image');
+            Route::get('/site-banners/{siteBanner}', [App\Http\Controllers\AuthenticatedImageController::class, 'siteBannerImage'])->name('site_banner_image');
             Route::get('/torrent-banners/{id}', [App\Http\Controllers\AuthenticatedImageController::class, 'torrentBanner'])->name('torrent_banner');
             Route::get('/torrent-covers/{id}', [App\Http\Controllers\AuthenticatedImageController::class, 'torrentCover'])->name('torrent_cover');
             Route::get('/user-avatars/{user:username}', [App\Http\Controllers\AuthenticatedImageController::class, 'userAvatar'])->name('user_avatar');
@@ -713,6 +714,16 @@ Route::middleware(SetLanguage::class)->group(function (): void {
                 Route::get('/{automaticTorrentFreeleech}/edit', [App\Http\Controllers\Staff\AutomaticTorrentFreeleechController::class, 'edit'])->name('edit');
                 Route::patch('/{automaticTorrentFreeleech}', [App\Http\Controllers\Staff\AutomaticTorrentFreeleechController::class, 'update'])->name('update');
                 Route::delete('/{automaticTorrentFreeleech}', [App\Http\Controllers\Staff\AutomaticTorrentFreeleechController::class, 'destroy'])->name('destroy');
+            });
+
+            // Site Banners (Branding)
+            Route::prefix('banners')->name('banners.')->middleware(CheckForAdmin::class)->group(function (): void {
+                Route::get('/', [App\Http\Controllers\Staff\BannerController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Staff\BannerController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Staff\BannerController::class, 'store'])->name('store');
+                Route::get('/{banner}/edit', [App\Http\Controllers\Staff\BannerController::class, 'edit'])->name('edit');
+                Route::patch('/{banner}', [App\Http\Controllers\Staff\BannerController::class, 'update'])->name('update');
+                Route::delete('/{banner}', [App\Http\Controllers\Staff\BannerController::class, 'destroy'])->name('destroy');
             });
 
             // Backup System

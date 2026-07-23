@@ -7,16 +7,147 @@
     width: 17px;
 }
 
+.dashboard__hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard__hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.dashboard__hero-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    background: var(--button-filled-bg);
+    color: var(--button-filled-fg);
+    box-shadow: var(--achievement-box-shadow);
+    transition: transform 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    i {
+        font-size: 1.4rem;
+        opacity: 0.85;
+    }
+}
+
+.dashboard__hero-stat-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.dashboard__hero-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dashboard__filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--compact-search-bg);
+    border-radius: var(--compact-search-border-radius);
+    padding: var(--compact-search-padding) 0.75rem;
+    min-width: 220px;
+}
+
+.dashboard__filter-label {
+    display: flex;
+    align-items: center;
+    color: var(--compact-search-fg);
+}
+
+.dashboard__filter-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: inherit;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.dashboard__banner {
+    display: block;
+    margin-bottom: 1rem;
+
+    img {
+        max-width: 100%;
+        border-radius: 12px;
+    }
+}
+
 .dashboard__menus {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(max(240px, 30%), 1fr));
     gap: 1rem;
+
+    .panel__body {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-content: flex-start;
+    }
+
+    .form__group--horizontal {
+        margin: 0;
+        flex: 1 1 auto;
+        transition:
+            opacity 0.15s ease,
+            transform 0.15s ease;
+
+        .form__button--text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: 8px;
+            padding: 0.4rem 0.7rem;
+            white-space: nowrap;
+
+            &:hover {
+                background: var(--achievement-bg);
+                transform: translateY(-1px);
+            }
+        }
+    }
 }
 
 .dashboard__stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
+}
+
+/* Site Banners (Branding) */
+
+.site-banners {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.site-banners__image {
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: var(--achievement-box-shadow);
 }
 
 /* Applications */

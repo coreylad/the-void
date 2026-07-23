@@ -17,6 +17,57 @@
 @section('page', 'page__staff-dashboard--index')
 
 @section('main')
+    <x-site-banner slot="dashboard" class="dashboard__banner" />
+    <div class="dashboard__hero">
+        <div class="dashboard__hero-stats">
+            <div class="dashboard__hero-stat">
+                <i class="{{ config('other.font-awesome') }} fa-users"></i>
+                <div>
+                    <span class="dashboard__hero-stat-value">{{ $users->total }}</span>
+                    <span class="dashboard__hero-stat-label">Users</span>
+                </div>
+            </div>
+            <div class="dashboard__hero-stat">
+                <i class="{{ config('other.font-awesome') }} fa-upload"></i>
+                <div>
+                    <span class="dashboard__hero-stat-value">{{ $torrents->total }}</span>
+                    <span class="dashboard__hero-stat-label">Torrents</span>
+                </div>
+            </div>
+            <div class="dashboard__hero-stat">
+                <i class="{{ config('other.font-awesome') }} fa-exchange-alt"></i>
+                <div>
+                    <span class="dashboard__hero-stat-value">{{ $peers->active }}</span>
+                    <span class="dashboard__hero-stat-label">Active peers</span>
+                </div>
+            </div>
+            <div class="dashboard__hero-stat">
+                <i class="{{ config('other.font-awesome') }} fa-clock"></i>
+                <div>
+                    <span class="dashboard__hero-stat-value">{{ $unsolvedReportsCount }}</span>
+                    <span class="dashboard__hero-stat-label">Open reports</span>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard__filter" x-data="{ query: '' }">
+            <label class="dashboard__filter-label" for="dashboard-tool-filter">
+                <i class="{{ config('other.font-awesome') }} fa-search"></i>
+                <span class="sr-only">Filter tools</span>
+            </label>
+            <input
+                id="dashboard-tool-filter"
+                class="dashboard__filter-input"
+                type="search"
+                placeholder="Filter tools…"
+                x-model="query"
+                x-on:input="
+                    document.querySelectorAll('.dashboard__menus .form__group--horizontal').forEach((el) => {
+                        el.style.display = query === '' || el.textContent.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+                    })
+                "
+            />
+        </div>
+    </div>
     <div class="dashboard__menus">
         <section class="panelV2 panel--grid-item">
             <h2 class="panel__heading">
@@ -215,6 +266,15 @@
                         >
                             <i class="fab fa-wpforms"></i>
                             {{ __('staff.forums') }}
+                        </a>
+                    </p>
+                    <p class="form__group form__group--horizontal">
+                        <a
+                            class="form__button form__button--text"
+                            href="{{ route('staff.banners.index') }}"
+                        >
+                            <i class="{{ config('other.font-awesome') }} fa-image"></i>
+                            Site banners (branding)
                         </a>
                     </p>
                 @endif
