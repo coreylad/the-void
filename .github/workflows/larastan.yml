@@ -1,0 +1,61 @@
+name: PHP Static Analysis (Larastan)
+on: [ push, pull_request ]
+jobs:
+    test:
+        strategy:
+            matrix:
+                operating-system:
+                    - ubuntu-24.04
+                php-version:
+                    - '8.5'
+        name: php ${{ matrix.php-version }} on ${{ matrix.operating-system }}
+        runs-on: ${{ matrix.operating-system }}
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ALLOW_EMPTY_PASSWORD: yes
+                    MYSQL_DATABASE: unit3d
+                ports:
+                    - 3306:3306
+                options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+            redis:
+                image: redis:5.0
+                ports:
+                    - 6379:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        steps:
+            # 1. Checkout
+            -   name: Checkout
+                uses: actions/checkout@v6
+                with:
+                    fetch-depth: 0
+
+            # 2. Setup
+            -   uses: ./.github/actions/setup
+                with:
+                    php-version: ${{ matrix.php-version }}
+                    operating-system: ${{ matrix.operating-system }}
+
+            # 3. PHPStan Analysis
+            -   name: Restore PHPStan cache
+                uses: actions/cache/restore@v4
+                with:
+                    path: .phpstan.cache
+                    key: unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-phpstan-${{ github.run_id }}
+                    restore-keys: |
+                        unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-phpstan-
+
+            -   name: Run Larastan
+                run: ./vendor/bin/phpstan analyse -vvv --memory-limit=2G
+
+            -   name: Save PHPStan cache
+                uses: actions/cache/save@v4
+                if: always()
+                with:
+                    path: .phpstan.cache
+                    key: unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-phpstan-${{ github.run_id }}

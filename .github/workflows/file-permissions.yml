@@ -1,0 +1,32 @@
+name: File permissions
+on: [ push, pull_request ]
+jobs:
+    pint:
+        strategy:
+            matrix:
+                operating-system:
+                    - ubuntu-24.04
+        name: ${{ matrix.operating-system }}
+        runs-on: ${{ matrix.operating-system }}
+        steps:
+            # 1. Checkout
+            -   name: Checkout
+                uses: actions/checkout@v6
+                with:
+                    fetch-depth: 0
+
+            # 2. Set Permissions
+            -   name: Set file permissions
+                run: sudo find ${{ github.workspace }} -type f -exec chmod 664 {} \;
+
+            -   name: Set folder permissions
+                run: sudo find ${{ github.workspace }} -type d -exec chmod 775 {} \;
+
+            # 3. Commit Changes
+            -   name: Commit changes
+                uses: stefanzweifel/git-auto-commit-action@v7
+                with:
+                    commit_message: "automation: set git file permissions"
+                    commit_user_name: unit3d-bot
+                    commit_user_email: unit3d_gh_bot@protonmail.com
+                    commit_author: unit3d-bot <unit3d_gh_bot@protonmail.com>

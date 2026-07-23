@@ -1,0 +1,52 @@
+name: PHP Lint (Pint)
+on: [ push, pull_request ]
+jobs:
+    pint:
+        strategy:
+            matrix:
+                operating-system:
+                    - ubuntu-24.04
+                php-version:
+                    - '8.5'
+        name: php ${{ matrix.php-version }} on ${{ matrix.operating-system }}
+        runs-on: ${{ matrix.operating-system }}
+        steps:
+            # 1. Checkout
+            -   name: Checkout
+                uses: actions/checkout@v6
+                with:
+                    fetch-depth: 0
+
+            # 2. Setup
+            -   uses: ./.github/actions/setup
+                with:
+                    php-version: ${{ matrix.php-version }}
+                    operating-system: ${{ matrix.operating-system }}
+
+            # 3. Run Pint
+            -   name: Restore Pint cache
+                uses: actions/cache/restore@v4
+                with:
+                    path: .pint.cache
+                    key: unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-pint-${{ github.run_id }}
+                    restore-keys: |
+                        unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-pint-
+
+            -   name: Run Pint
+                run: ./vendor/bin/pint -v
+
+            -   name: Save Pint cache
+                uses: actions/cache/save@v4
+                if: always()
+                with:
+                    path: .pint.cache
+                    key: unit3d-${{ matrix.operating-system }}-php${{ matrix.php-version }}-pint-${{ github.run_id }}
+
+            # 4. Commit Changes
+            -   name: Commit changes
+                uses: stefanzweifel/git-auto-commit-action@v7
+                with:
+                    commit_message: "automation: laravel pint ci"
+                    commit_user_name: unit3d-bot
+                    commit_user_email: unit3d_gh_bot@protonmail.com
+                    commit_author: unit3d-bot <unit3d_gh_bot@protonmail.com>

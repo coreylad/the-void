@@ -1,0 +1,24 @@
+name: Compile Assets (Vite)
+on: [ push, pull_request ]
+jobs:
+    build-assets:
+        strategy:
+            matrix:
+                operating-system:
+                    - ubuntu-24.04
+                php-version:
+                    - '8.5'
+        name: php ${{ matrix.php-version }} on ${{ matrix.operating-system }}
+        runs-on: ${{ matrix.operating-system }}
+        steps:
+            # 1. Checkout
+            -   name: Checkout
+                uses: actions/checkout@v6
+                with:
+                    fetch-depth: 0
+
+            # 2. Setup
+            -   uses: ./.github/actions/setup
+                with:
+                    php-version: ${{ matrix.php-version }}
+                    operating-system: ${{ matrix.operating-system }}
