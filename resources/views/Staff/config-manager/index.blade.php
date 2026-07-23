@@ -31,9 +31,20 @@
     <section class="panelV2">
         <h2 class="panel__heading">{{ __('staff.config-manager') }}</h2>
         <div class="panel__body">
-            <form class="form" method="GET" action="{{ route('staff.config_manager.index') }}">
+            <form
+                class="form"
+                method="GET"
+                action="{{ route('staff.config_manager.index') }}"
+                x-data="{ autosubmit: true }"
+            >
                 <p class="form__group">
-                    <select id="file" class="form__select" name="file" onchange="this.form.submit()">
+                    <select
+                        id="file"
+                        class="form__select"
+                        name="file"
+                        required
+                        x-on:change="if (autosubmit) { $el.form.requestSubmit(); }"
+                    >
                         @foreach ($editableFiles as $file)
                             <option value="{{ $file }}" @selected($file === $selectedFile)>
                                 {{ $file }}
@@ -44,6 +55,18 @@
                         Config file
                     </label>
                 </p>
+                <p class="form__group" x-show="!autosubmit" x-cloak>
+                    <button class="form__button form__button--filled" type="submit">
+                        Load file settings
+                    </button>
+                </p>
+                <noscript>
+                    <p class="form__group">
+                        <button class="form__button form__button--filled" type="submit">
+                            Load file settings
+                        </button>
+                    </p>
+                </noscript>
             </form>
 
             <form class="form" method="POST" action="{{ route('staff.config_manager.update') }}">
