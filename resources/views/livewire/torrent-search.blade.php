@@ -112,34 +112,6 @@
                 <div class="form__group--short-horizontal">
                     <p class="form__group">
                         <input
-                            id="episodeNumber"
-                            wire:model.live="episodeNumber"
-                            class="form__text"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            placeholder=" "
-                        />
-                        <label class="form__label form__label--floating" for="episodeNumber">
-                            {{ __('torrent.episode-number') }}
-                        </label>
-                    </p>
-                    <p class="form__group">
-                        <input
-                            id="seasonNumber"
-                            wire:model.live="seasonNumber"
-                            class="form__text"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            placeholder=" "
-                        />
-                        <label class="form__label form__label--floating" for="seasonNumber">
-                            {{ __('torrent.season-number') }}
-                        </label>
-                    </p>
-                </div>
-                <div class="form__group--short-horizontal">
-                    <p class="form__group">
-                        <input
                             id="minSize"
                             wire:model.live="minSize"
                             class="form__text"
@@ -211,12 +183,6 @@
                 </div>
             </div>
             <div class="form__group--short-horizontal">
-                <div class="form__group">
-                    <div id="regions" wire:ignore></div>
-                </div>
-                <div class="form__group">
-                    <div id="distributors" wire:ignore></div>
-                </div>
                 <p class="form__group">
                     <select id="adult" wire:model.live="adult" class="form__select" placeholder=" ">
                         <option value="any" selected>Any</option>
@@ -252,78 +218,6 @@
                     <label class="form__label form__label--floating" for="collectionId">
                         Collection ID
                     </label>
-                </p>
-                <p class="form__group">
-                    <input
-                        id="companyId"
-                        wire:model.live="companyId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="companyId">
-                        Company ID
-                    </label>
-                </p>
-                <p class="form__group">
-                    <input
-                        id="networkId"
-                        wire:model.live="networkId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="networkId">
-                        Network ID
-                    </label>
-                </p>
-            </div>
-            <div class="form__group--short-horizontal">
-                <p class="form__group">
-                    <input
-                        id="tmdbId"
-                        wire:model.live="tmdbId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="tmdbId">TMDb ID</label>
-                </p>
-                <p class="form__group">
-                    <input
-                        id="imdbId"
-                        wire:model.live="imdbId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]+|tt0*\d{7,}"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="imdbId">IMDb ID</label>
-                </p>
-                <p class="form__group">
-                    <input
-                        id="tvdbId"
-                        wire:model.live="tvdbId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="tvdbId">TVDb ID</label>
-                </p>
-                <p class="form__group">
-                    <input
-                        id="malId"
-                        wire:model.live="malId"
-                        class="form__text"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        placeholder=" "
-                    />
-                    <label class="form__label form__label--floating" for="malId">MAL ID</label>
                 </p>
             </div>
             <div class="form__group--short-horizontal">
@@ -381,26 +275,6 @@
                                             wire:model.live="resolutionIds"
                                         />
                                         {{ $resolution->name }}
-                                    </label>
-                                </p>
-                            @endforeach
-                        </div>
-                    </fieldset>
-                </div>
-                <div class="form__group">
-                    <fieldset class="form__fieldset">
-                        <legend class="form__legend">{{ __('torrent.genre') }}</legend>
-                        <div class="form__fieldset-checkbox-container">
-                            @foreach ($genres as $genre)
-                                <p class="form__group">
-                                    <label class="form__label">
-                                        <input
-                                            class="form__checkbox"
-                                            type="checkbox"
-                                            value="{{ $genre->id }}"
-                                            wire:model.live="genreIds"
-                                        />
-                                        {{ $genre->name }}
                                     </label>
                                 </p>
                             @endforeach
@@ -1029,70 +903,4 @@
         @endswitch
         {{ $torrents->links('partials.pagination') }}
     </section>
-    <script src="{{ asset('build/unit3d/virtual-select.js') }}" crossorigin="anonymous"></script>
-    <script nonce="{{ HDVinnie\SecureHeaders\SecureHeaders::nonce('script') }}">
-        document.addEventListener('livewire:init', function () {
-          let myRegions = [
-              {
-                  label: "No region", value: "0"
-              },
-              ... {{
-                  Js::from(
-                      $regions
-                          ->each(function ($region) {
-                              $region->label = $region->name . ' (' . __('regions.' . $region->name) . ')';
-                              $region->value = $region->id;
-                          })
-                          ->select(['label', 'value'])
-                  )
-              }}
-          ];
-
-          VirtualSelect.init({
-            ele: '#regions',
-            options: myRegions,
-            multiple: true,
-            search: true,
-            placeholder: "{{ __('Select Regions') }}",
-            noOptionsText: "{{ __('No results found') }}",
-          })
-
-          let regions = document.querySelector('#regions')
-          regions.addEventListener('change', () => {
-            let data = regions.value
-            @this.set('regionIds', data)
-          })
-
-          let myDistributors = [
-              {
-                  label: "No distributor", value: "0"
-              },
-              ... {{
-                  Js::from(
-                      $distributors
-                          ->each(function ($distributor) {
-                              $distributor->label = $distributor->name;
-                              $distributor->value = $distributor->id;
-                          })
-                          ->select(['label', 'value'])
-                  )
-              }}
-          ];
-
-          VirtualSelect.init({
-            ele: '#distributors',
-            options: myDistributors,
-            multiple: true,
-            search: true,
-            placeholder: "{{ __('Select Distributor') }}",
-            noOptionsText: "{{ __('No results found') }}",
-          })
-
-          let distributors = document.querySelector('#distributors')
-          distributors.addEventListener('change', () => {
-            let data = distributors.value
-            @this.set('distributorIds', data)
-          })
-        })
-    </script>
 </div>

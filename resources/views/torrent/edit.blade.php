@@ -615,12 +615,12 @@
                         {{ Js::from(old('game_exists_on_igdb', $torrent->igdb) !== null) }},
                     typeSelect: {
                         ['x-on:change']() {
-                            this.types[this.type].name = this.types[this.$event.target.value].name;
+                            this.type = this.$event.target.value;
                         },
                     },
                     categorySelect: {
                         ['x-on:change']() {
-                            this.cats[this.cat].type = this.cats[this.$event.target.value].type;
+                            this.cat = this.$event.target.value;
                         },
                     },
                 }));

@@ -833,6 +833,12 @@ Route::middleware(SetLanguage::class)->group(function (): void {
                 Route::post('/test-email', [App\Http\Controllers\Staff\CommandController::class, 'testEmail']);
             });
 
+            // Config Manager
+            Route::prefix('config-manager')->name('config_manager.')->middleware(CheckForOwner::class)->group(function (): void {
+                Route::get('/', [App\Http\Controllers\Staff\ConfigManagerController::class, 'index'])->name('index');
+                Route::patch('/', [App\Http\Controllers\Staff\ConfigManagerController::class, 'update'])->name('update');
+            });
+
             // Distributors
             Route::prefix('distributors')->name('distributors.')->group(function (): void {
                 Route::get('/', [App\Http\Controllers\Staff\DistributorController::class, 'index'])->name('index');

@@ -15,8 +15,8 @@
 @endsection
 
 @section('nav-tabs')
-    <li class="nav-tab--active">
-        <a class="nav-tab--active__link" href="{{ route('torrents.index') }}">
+    <li class="nav-tabV2">
+        <a class="nav-tab__link" href="{{ route('torrents.index') }}">
             {{ __('torrent.search') }}
         </a>
     </li>

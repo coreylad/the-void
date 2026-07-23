@@ -21,6 +21,7 @@ use App\Helpers\HiddenCaptcha;
 use App\Interfaces\ByteUnitsInterface;
 use App\Models\Apikey;
 use App\Models\User;
+use App\Services\SiteConfigurationService;
 use App\Observers\UserObserver;
 use App\View\Composers\FooterComposer;
 use App\View\Composers\TopNavComposer;
@@ -58,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        resolve(SiteConfigurationService::class)->applyOverrides();
+
         // User Observer For Cache
         User::observe(UserObserver::class);
 

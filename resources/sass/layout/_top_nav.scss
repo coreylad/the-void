@@ -85,6 +85,16 @@
     text-transform: uppercase;
 }
 
+/* Keep the favicon used as the brand logo constrained to a small, fixed size
+   so it never stretches to the intrinsic size of the ICO's largest frame. */
+.top-nav__branding > img,
+.footer__section-title > img {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
 /* Main menus
 ******************************************************************************/
 
