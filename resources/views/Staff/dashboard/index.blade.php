@@ -59,6 +59,15 @@
                             Commands
                         </a>
                     </p>
+                    <p class="form__group form__group--horizontal">
+                        <a
+                            class="form__button form__button--text"
+                            href="{{ route('staff.config_manager.index') }}"
+                        >
+                            <i class="{{ config('other.font-awesome') }} fa-sliders-h"></i>
+                            {{ __('staff.config-manager') }}
+                        </a>
+                    </p>
 
                     @if (config('donation.is_enabled'))
                         <p class="form__group form__group--horizontal">
