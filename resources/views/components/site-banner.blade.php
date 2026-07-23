@@ -1,17 +1,17 @@
 @props([
-    'slot',
+    'bannerSlot',
 ])
 
 @php
     $siteBanners = cache()->remember(
-        "site-banners:{$slot}",
+        "site-banners:{$bannerSlot}",
         60,
-        fn () => \App\Models\SiteBanner::query()->activeForSlot($slot)->get(),
+        fn () => \App\Models\SiteBanner::query()->activeForSlot($bannerSlot)->get(),
     );
 @endphp
 
 @if ($siteBanners->isNotEmpty())
-    <div {{ $attributes->class(['site-banners', "site-banners--{$slot}"]) }}>
+    <div {{ $attributes->class(['site-banners', "site-banners--{$bannerSlot}"]) }}>
         @foreach ($siteBanners as $siteBanner)
             @if ($siteBanner->link_url)
                 <a

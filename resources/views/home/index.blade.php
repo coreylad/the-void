@@ -3,7 +3,7 @@
 @section('page', 'page__home')
 
 @section('main')
-    <x-site-banner slot="homepage" />
+    <x-site-banner banner-slot="homepage" />
     @foreach ($blocks as $block)
         @switch($block)
             @case('news')

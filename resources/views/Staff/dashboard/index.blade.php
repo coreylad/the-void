@@ -17,7 +17,7 @@
 @section('page', 'page__staff-dashboard--index')
 
 @section('main')
-    <x-site-banner slot="dashboard" class="dashboard__banner" />
+    <x-site-banner banner-slot="dashboard" class="dashboard__banner" />
     <div class="dashboard__hero">
         <div class="dashboard__hero-stats">
             <div class="dashboard__hero-stat">
