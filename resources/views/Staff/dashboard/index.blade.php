@@ -18,6 +18,22 @@
 
 @section('main')
     <x-site-banner banner-slot="dashboard" class="dashboard__banner" />
+    <section class="dashboard__command-center panelV2">
+        <div class="dashboard__command-center-title">
+            <h2 class="panel__heading">Staff command center</h2>
+            <p class="dashboard__command-center-subtitle">
+                Monitor health, triage alerts, and jump to the right tools faster.
+            </p>
+        </div>
+        <nav class="dashboard__quick-nav" aria-label="Staff sections">
+            <a href="#dashboard-section-quick" class="dashboard__quick-nav-item">Quick actions</a>
+            <a href="#dashboard-section-content" class="dashboard__quick-nav-item">Content</a>
+            <a href="#dashboard-section-torrents" class="dashboard__quick-nav-item">Torrents</a>
+            <a href="#dashboard-section-users" class="dashboard__quick-nav-item">Users</a>
+            <a href="#dashboard-section-chat" class="dashboard__quick-nav-item">Chat</a>
+            <a href="#dashboard-section-logs" class="dashboard__quick-nav-item">Logs</a>
+        </nav>
+    </section>
     <div class="dashboard__hero">
         <div class="dashboard__hero-stats">
             <div class="dashboard__hero-stat">
@@ -58,7 +74,7 @@
                 id="dashboard-tool-filter"
                 class="dashboard__filter-input"
                 type="search"
-                placeholder="Filter tools…"
+                placeholder="Filter tools..."
                 x-model="query"
                 x-on:input="
                     document.querySelectorAll('.dashboard__menus .form__group--horizontal').forEach((el) => {
@@ -69,11 +85,65 @@
         </div>
     </div>
     <div class="dashboard__menus">
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-quick" class="panelV2 panel--grid-item dashboard__panel">
+            <h2 class="panel__heading">
+                <i class="{{ config('other.font-awesome') }} fa-bolt"></i>
+                Quick actions
+            </h2>
+            <p class="dashboard__panel-note">Priority tasks and high-frequency operations.</p>
+            <div class="panel__body">
+                <p class="form__group form__group--horizontal">
+                    <a class="form__button form__button--text" href="{{ route('staff.reports.index') }}">
+                        <i class="{{ config('other.font-awesome') }} fa-flag"></i>
+                        Open reports ({{ $unsolvedReportsCount }})
+                        @if ($unsolvedReportsCount > 0)
+                            <x-animation.notification />
+                        @endif
+                    </a>
+                </p>
+                <p class="form__group form__group--horizontal">
+                    <a class="form__button form__button--text" href="{{ route('staff.applications.index') }}">
+                        <i class="{{ config('other.font-awesome') }} fa-user-check"></i>
+                        Pending applications ({{ $pendingApplicationsCount }})
+                        @if ($pendingApplicationsCount > 0)
+                            <x-animation.notification />
+                        @endif
+                    </a>
+                </p>
+                <p class="form__group form__group--horizontal">
+                    <a class="form__button form__button--text" href="{{ route('staff.moderation.index') }}">
+                        <i class="{{ config('other.font-awesome') }} fa-shield-check"></i>
+                        {{ __('staff.torrent-moderation') }}
+                    </a>
+                </p>
+                <p class="form__group form__group--horizontal">
+                    <a class="form__button form__button--text" href="{{ route('staff.users.index') }}">
+                        <i class="{{ config('other.font-awesome') }} fa-users"></i>
+                        {{ __('staff.user-search') }}
+                    </a>
+                </p>
+                <p class="form__group form__group--horizontal">
+                    <a class="form__button form__button--text" href="{{ route('staff.banners.index') }}">
+                        <i class="{{ config('other.font-awesome') }} fa-image"></i>
+                        Branding and banners
+                    </a>
+                </p>
+                @if (auth()->user()->group->is_owner)
+                    <p class="form__group form__group--horizontal">
+                        <a class="form__button form__button--text" href="{{ route('staff.commands.index') }}">
+                            <i class="fab fa-laravel"></i>
+                            Commands and maintenance
+                        </a>
+                    </p>
+                @endif
+            </div>
+        </section>
+        <section id="dashboard-section-platform" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-link"></i>
-                {{ __('staff.links') }}
+                Platform and operations
             </h2>
+            <p class="dashboard__panel-note">Global links and owner-only infrastructure controls.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a class="form__button form__button--text" href="{{ route('home.index') }}">
@@ -146,11 +216,12 @@
                 @endif
             </div>
         </section>
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-chat" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-wrench"></i>
-                {{ __('staff.chat-tools') }}
+                Chat operations
             </h2>
+            <p class="dashboard__panel-note">Rooms, bots, statuses, and moderation utilities.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a
@@ -198,11 +269,12 @@
                 </div>
             </div>
         </section>
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-content" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-wrench"></i>
-                {{ __('staff.general-tools') }}
+                Content and configuration
             </h2>
+            <p class="dashboard__panel-note">Site content, taxonomy, support metadata, and policy lists.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a
@@ -353,11 +425,12 @@
                 </p>
             </div>
         </section>
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-torrents" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-wrench"></i>
-                {{ __('staff.torrent-tools') }}
+                Torrent and tracker operations
             </h2>
+            <p class="dashboard__panel-note">Moderation pipeline, tracker activity, and torrent metadata tooling.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a
@@ -527,11 +600,12 @@
                 @endif
             </div>
         </section>
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-users" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-wrench"></i>
-                {{ __('staff.user-tools') }}
+                Users and communications
             </h2>
+            <p class="dashboard__panel-note">Account operations, outreach, anti-abuse, and user lifecycle tasks.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a
@@ -701,11 +775,12 @@
                 @endif
             </div>
         </section>
-        <section class="panelV2 panel--grid-item">
+        <section id="dashboard-section-logs" class="panelV2 panel--grid-item dashboard__panel">
             <h2 class="panel__heading">
                 <i class="{{ config('other.font-awesome') }} fa-file"></i>
-                {{ __('staff.logs') }}
+                Logs and audit trail
             </h2>
+            <p class="dashboard__panel-note">Investigations, compliance trails, and historical diagnostics.</p>
             <div class="panel__body">
                 <p class="form__group form__group--horizontal">
                     <a
