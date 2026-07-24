@@ -719,6 +719,9 @@ Route::middleware(SetLanguage::class)->group(function (): void {
             // Site Banners (Branding)
             Route::prefix('banners')->name('banners.')->middleware(CheckForAdmin::class)->group(function (): void {
                 Route::get('/', [App\Http\Controllers\Staff\BannerController::class, 'index'])->name('index');
+                Route::patch('/branding', [App\Http\Controllers\Staff\BannerController::class, 'updateBranding'])->name('branding.update');
+                Route::patch('/branding/smtp', [App\Http\Controllers\Staff\BannerController::class, 'updateSmtp'])->name('smtp.update');
+                Route::post('/branding/smtp/test', [App\Http\Controllers\Staff\BannerController::class, 'testSmtp'])->name('smtp.test');
                 Route::get('/create', [App\Http\Controllers\Staff\BannerController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Staff\BannerController::class, 'store'])->name('store');
                 Route::get('/{banner}/edit', [App\Http\Controllers\Staff\BannerController::class, 'edit'])->name('edit');
