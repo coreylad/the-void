@@ -17,7 +17,21 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
+use App\Models\FailedLoginAttempt;
+use App\Models\FreeleechToken;
 use App\Models\Group;
+use App\Models\History;
+use App\Models\Like;
+use App\Models\Message;
+use App\Models\Participant;
+use App\Models\Peer;
+use App\Models\Post;
+use App\Models\PrivateMessage;
+use App\Models\Scopes\ApprovedScope;
+use App\Models\Thank;
+use App\Models\Topic;
+use App\Models\Torrent;
 use App\Models\User;
 use App\Services\Unit3dAnnounce;
 use Exception;
@@ -66,17 +80,71 @@ class MassActionController extends Controller
                 ->with('warning', 'Pruned group not found. No users were purged.');
         }
 
-        try {
-            $deleted = User::query()
-                ->onlyTrashed()
-                ->where('group_id', '=', $prunedGroupId)
-                ->forceDelete();
-        } catch (Throwable) {
+        $purged = 0;
+        $failed = 0;
+
+        User::query()
+            ->withTrashed()
+            ->where('group_id', '=', $prunedGroupId)
+            ->each(function (User $user) use (&$purged, &$failed): void {
+                try {
+                    Torrent::query()->withoutGlobalScope(ApprovedScope::class)->where('user_id', '=', $user->id)->update([
+                        'user_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    Comment::query()->where('user_id', '=', $user->id)->update([
+                        'user_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    Post::query()->where('user_id', '=', $user->id)->update([
+                        'user_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    Topic::query()->where('first_post_user_id', '=', $user->id)->update([
+                        'first_post_user_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    Topic::query()->where('last_post_user_id', '=', $user->id)->update([
+                        'last_post_user_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    PrivateMessage::query()->where('sender_id', '=', $user->id)->update([
+                        'sender_id' => User::SYSTEM_USER_ID,
+                    ]);
+
+                    Participant::query()->where('user_id', '=', $user->id)->delete();
+                    Message::query()->where('user_id', '=', $user->id)->delete();
+                    Like::query()->where('user_id', '=', $user->id)->delete();
+                    Thank::query()->where('user_id', '=', $user->id)->delete();
+                    Peer::query()->where('user_id', '=', $user->id)->delete();
+                    History::query()->where('user_id', '=', $user->id)->delete();
+                    FailedLoginAttempt::query()->where('user_id', '=', $user->id)->delete();
+
+                    $user->followers()->detach();
+                    $user->following()->detach();
+
+                    foreach (FreeleechToken::query()->where('user_id', '=', $user->id)->get() as $token) {
+                        $token->delete();
+                        cache()->forget('freeleech_token:'.$user->id.':'.$token->torrent_id);
+                    }
+
+                    cache()->forget('user:'.$user->passkey);
+
+                    Unit3dAnnounce::removeUser($user);
+
+                    $user->forceDelete();
+                    ++$purged;
+                } catch (Throwable) {
+                    ++$failed;
+                }
+            }, 100);
+
+        if ($failed > 0) {
             return to_route('staff.dashboard.index')
-                ->with('error', 'Failed to purge pruned users. Check logs for details.');
+                ->with('warning', "Pruned users purged: {$purged}. Failed: {$failed}. Check logs for details.");
         }
 
         return to_route('staff.dashboard.index')
-            ->with('success', "Pruned users purged: {$deleted}");
+            ->with('success', "Pruned users purged: {$purged}");
     }
 }
