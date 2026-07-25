@@ -122,17 +122,14 @@ return [
     | Restricted mode for invites. If set to true, invites will be restricted
     | Exempt these groups from the invite restrictions
     */
-    'invite-only'   => true,
-    'invite_expire' => 14,
+    'invite-only'   => env('INVITE_ONLY', true),
+    'invite_expire' => env('INVITE_EXPIRE', 14),
 
-    'invites_restriced' => false,
-    'invite_groups'     => [
-        'Administrator',
-        'Owner',
-    ],
-    'max_unused_user_invites' => 1,
+    'invites_restriced' => env('INVITES_RESTRICED', false),
+    'invite_groups'     => array_values(array_filter(array_map('trim', explode(',', (string) env('INVITE_GROUPS', 'Administrator,Owner'))))),
+    'max_unused_user_invites' => env('MAX_UNUSED_USER_INVITES', 1),
 
-    'hours-until-invite-after-2fa' => 24,
+    'hours-until-invite-after-2fa' => env('HOURS_UNTIL_INVITE_AFTER_2FA', 24),
 
     /*
     |--------------------------------------------------------------------------
@@ -182,7 +179,7 @@ return [
     | True/1 = Enabled
     | False/0 = Disabled
     */
-    'application_signups' => false,
+    'application_signups' => env('APPLICATION_SIGNUPS', false),
 
     /*
     |--------------------------------------------------------------------------

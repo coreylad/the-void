@@ -132,35 +132,21 @@ class BannerController extends Controller
      */
     public function updateRegistration(UpdateRegistrationSettingsRequest $request): RedirectResponse
     {
-        $configPath = config_path('other.php');
-        $configContents = file_get_contents($configPath);
-
-        abort_if($configContents === false, 500, 'Unable to read registration config');
-
-        $scalarReplacements = [
-            'invite-only'                  => $request->boolean('invite_only'),
-            'application_signups'          => $request->boolean('application_signups'),
-            'invites_restriced'            => $request->boolean('invites_restriced'),
-            'invite_expire'                => $request->integer('invite_expire'),
-            'hours-until-invite-after-2fa' => $request->integer('hours_until_invite_after_2fa'),
-            'max_unused_user_invites'      => $request->integer('max_unused_user_invites'),
-        ];
-
-        foreach ($scalarReplacements as $key => $value) {
-            $configContents = self::replaceSingleLineConfigValue($configContents, $key, $value);
-        }
-
         $inviteGroups = Group::query()
             ->whereIn('name', $request->collect('invite_groups')->all())
             ->orderBy('position')
             ->pluck('name')
             ->all();
 
-        $configContents = self::replaceArrayConfigValue($configContents, 'invite_groups', $inviteGroups);
-
-        $bytesWritten = file_put_contents($configPath, $configContents);
-
-        abort_if($bytesWritten === false, 500, 'Unable to write registration config');
+        self::updateEnvironmentValues([
+            'INVITE_ONLY'                  => $request->boolean('invite_only') ? 'true' : 'false',
+            'APPLICATION_SIGNUPS'          => $request->boolean('application_signups') ? 'true' : 'false',
+            'INVITES_RESTRICED'            => $request->boolean('invites_restriced') ? 'true' : 'false',
+            'INVITE_EXPIRE'                => (string) $request->integer('invite_expire'),
+            'HOURS_UNTIL_INVITE_AFTER_2FA' => (string) $request->integer('hours_until_invite_after_2fa'),
+            'MAX_UNUSED_USER_INVITES'      => (string) $request->integer('max_unused_user_invites'),
+            'INVITE_GROUPS'                => implode(',', $inviteGroups),
+        ]);
 
         self::refreshRuntimeConfigurationCache();
 
@@ -440,63 +426,8 @@ class BannerController extends Controller
         return '"'.addcslashes($value, "\\\"").'"';
     }
 
-    private static function replaceSingleLineConfigValue(string $contents, string $key, bool|int|string $value): string
-    {
-        $pattern = "/('".preg_quote($key, '/')."'\\s*=>\\s*)([^,\\n]+)(,)/";
-
-        $updatedContents = preg_replace_callback(
-            $pattern,
-            static fn (array $matches): string => $matches[1].var_export($value, true).$matches[3],
-            $contents,
-            1,
-            $count
-        );
-
-        abort_if($updatedContents === null || $count !== 1, 500, "Unable to update registration key: {$key}");
-
-        return $updatedContents;
-    }
-
-    /**
-     * @param  array<int, string>  $value
-     */
-    private static function replaceArrayConfigValue(string $contents, string $key, array $value): string
-    {
-        $pattern = "/('".preg_quote($key, '/')."'\\s*=>\\s*)\\[(?:.|\\R)*?\\](,)/U";
-
-        $updatedContents = preg_replace_callback(
-            $pattern,
-            static fn (array $matches): string => $matches[1].self::formatStringArray($value).$matches[2],
-            $contents,
-            1,
-            $count
-        );
-
-        abort_if($updatedContents === null || $count !== 1, 500, "Unable to update registration key: {$key}");
-
-        return $updatedContents;
-    }
-
-    /**
-     * @param  array<int, string>  $value
-     */
-    private static function formatStringArray(array $value): string
-    {
-        if ($value === []) {
-            return '[]';
-        }
-
-        $lines = array_map(
-            static fn (string $item): string => "        ".var_export($item, true).',',
-            $value
-        );
-
-        return "[\n".implode("\n", $lines)."\n    ]";
-    }
-
     private static function refreshRuntimeConfigurationCache(): void
     {
         Artisan::call('config:clear');
-        Artisan::call('cache:clear');
     }
 }
