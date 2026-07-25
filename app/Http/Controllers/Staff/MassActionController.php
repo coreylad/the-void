@@ -21,6 +21,7 @@ use App\Models\Group;
 use App\Models\User;
 use App\Services\Unit3dAnnounce;
 use Exception;
+use Throwable;
 
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\MassActionControllerTest
@@ -58,15 +59,22 @@ class MassActionController extends Controller
      */
     public function purgePrunedUsers(): \Illuminate\Http\RedirectResponse
     {
-        $deleted = 0;
+        $prunedGroupId = Group::query()->where('slug', '=', 'pruned')->value('id');
 
-        User::query()
-            ->onlyTrashed()
-            ->whereRelation('group', 'slug', '=', 'pruned')
-            ->each(function (User $user) use (&$deleted): void {
-                $user->forceDelete();
-                ++$deleted;
-            }, 100);
+        if ($prunedGroupId === null) {
+            return to_route('staff.dashboard.index')
+                ->with('warning', 'Pruned group not found. No users were purged.');
+        }
+
+        try {
+            $deleted = User::query()
+                ->onlyTrashed()
+                ->where('group_id', '=', $prunedGroupId)
+                ->forceDelete();
+        } catch (Throwable) {
+            return to_route('staff.dashboard.index')
+                ->with('error', 'Failed to purge pruned users. Check logs for details.');
+        }
 
         return to_route('staff.dashboard.index')
             ->with('success', "Pruned users purged: {$deleted}");
