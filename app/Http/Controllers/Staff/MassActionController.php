@@ -52,4 +52,23 @@ class MassActionController extends Controller
         return to_route('staff.dashboard.index')
             ->with('success', 'Unvalidated accounts are now validated');
     }
+
+    /**
+     * Permanently purge already-pruned users.
+     */
+    public function purgePrunedUsers(): \Illuminate\Http\RedirectResponse
+    {
+        $deleted = 0;
+
+        User::query()
+            ->onlyTrashed()
+            ->whereRelation('group', 'slug', '=', 'pruned')
+            ->each(function (User $user) use (&$deleted): void {
+                $user->forceDelete();
+                ++$deleted;
+            }, 100);
+
+        return to_route('staff.dashboard.index')
+            ->with('success', "Pruned users purged: {$deleted}");
+    }
 }

@@ -737,6 +737,25 @@
                         </button>
                     </form>
                 </div>
+                @if (auth()->user()->group->is_admin)
+                    <div class="form__group form__group--horizontal">
+                        <form
+                            method="GET"
+                            action="{{ route('staff.mass-actions.purge-pruned-users') }}"
+                            x-data="confirmation"
+                        >
+                            @csrf
+                            <button
+                                x-on:click.prevent="confirmAction"
+                                data-b64-deletion-message="{{ base64_encode('Are you sure you want to permanently purge all already-pruned users? This cannot be undone.') }}"
+                                class="form__button form__button--text"
+                            >
+                                <i class="{{ config('other.font-awesome') }} fa-user-slash"></i>
+                                Purge pruned users
+                            </button>
+                        </form>
+                    </div>
+                @endif
                 <p class="form__group form__group--horizontal">
                     <a
                         class="form__button form__button--text"

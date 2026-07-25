@@ -953,6 +953,7 @@ Route::middleware(SetLanguage::class)->group(function (): void {
             // Mass Actions
             Route::prefix('mass-actions')->group(function (): void {
                 Route::get('/validate-users', [App\Http\Controllers\Staff\MassActionController::class, 'update'])->name('mass-actions.validate');
+                Route::get('/purge-pruned-users', [App\Http\Controllers\Staff\MassActionController::class, 'purgePrunedUsers'])->name('mass-actions.purge-pruned-users');
             });
 
             // Mass Email
