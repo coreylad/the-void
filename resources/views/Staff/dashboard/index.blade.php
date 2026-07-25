@@ -160,6 +160,17 @@
                         {{ __('staff.staff-dashboard') }}
                     </a>
                 </p>
+                @if (auth()->user()->group->is_admin)
+                    <p class="form__group form__group--horizontal">
+                        <a
+                            class="form__button form__button--text"
+                            href="{{ route('staff.banners.index') }}#registration-settings"
+                        >
+                            <i class="{{ config('other.font-awesome') }} fa-user-lock"></i>
+                            Registration settings
+                        </a>
+                    </p>
+                @endif
                 @if (auth()->user()->group->is_owner)
                     <p class="form__group form__group--horizontal">
                         <a

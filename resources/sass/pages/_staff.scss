@@ -159,6 +159,7 @@
     .dashboard__panel {
         border-radius: 13px;
         box-shadow: 0 8px 24px rgb(3 10 30 / 0.08);
+        overflow: hidden;
     }
 
     .dashboard__panel-note {
@@ -188,10 +189,13 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin: 0;
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
             white-space: normal;
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             min-height: 2.35rem;
             line-height: 1.2;
             justify-content: flex-start;

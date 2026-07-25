@@ -18,11 +18,13 @@ namespace App\Http\Controllers\Staff;
 
 use App\Helpers\AnimatedImage;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\UpdateRegistrationSettingsRequest;
 use App\Http\Requests\Staff\StoreSiteBannerRequest;
 use App\Http\Requests\Staff\UpdateSiteBrandingRequest;
 use App\Http\Requests\Staff\UpdateSiteBannerRequest;
 use App\Http\Requests\Staff\UpdateSmtpSettingsRequest;
 use App\Mail\TestEmail;
+use App\Models\Group;
 use App\Models\SiteBanner;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +56,16 @@ class BannerController extends Controller
                 'birthdate'        => (string) config('other.birthdate'),
                 'owner_email'      => (string) config('other.email'),
             ],
+            'registration' => [
+                'invite_only'                  => (bool) config('other.invite-only'),
+                'application_signups'          => (bool) config('other.application_signups'),
+                'invites_restriced'            => (bool) config('other.invites_restriced'),
+                'invite_expire'                => (int) config('other.invite_expire'),
+                'hours_until_invite_after_2fa' => (int) config('other.hours-until-invite-after-2fa'),
+                'max_unused_user_invites'      => (int) config('other.max_unused_user_invites', 1),
+                'invite_groups'                => config('other.invite_groups', []),
+            ],
+            'groups' => Group::query()->orderBy('position')->pluck('name')->all(),
             'smtp' => [
                 'mail_mailer'       => (string) config('mail.default'),
                 'mail_host'         => (string) config('mail.mailers.smtp.host'),
@@ -109,10 +121,52 @@ class BannerController extends Controller
             'DEFAULT_OWNER_EMAIL' => (string) $request->string('owner_email'),
         ]);
 
-        Artisan::call('config:clear');
+        self::refreshRuntimeConfigurationCache();
 
         return to_route('staff.banners.index')
             ->with('success', 'Site branding details successfully updated');
+    }
+
+    /**
+     * Update global site registration settings.
+     */
+    public function updateRegistration(UpdateRegistrationSettingsRequest $request): RedirectResponse
+    {
+        $configPath = config_path('other.php');
+        $configContents = file_get_contents($configPath);
+
+        abort_if($configContents === false, 500, 'Unable to read registration config');
+
+        $scalarReplacements = [
+            'invite-only'                  => $request->boolean('invite_only'),
+            'application_signups'          => $request->boolean('application_signups'),
+            'invites_restriced'            => $request->boolean('invites_restriced'),
+            'invite_expire'                => $request->integer('invite_expire'),
+            'hours-until-invite-after-2fa' => $request->integer('hours_until_invite_after_2fa'),
+            'max_unused_user_invites'      => $request->integer('max_unused_user_invites'),
+        ];
+
+        foreach ($scalarReplacements as $key => $value) {
+            $configContents = self::replaceSingleLineConfigValue($configContents, $key, $value);
+        }
+
+        $inviteGroups = Group::query()
+            ->whereIn('name', $request->collect('invite_groups')->all())
+            ->orderBy('position')
+            ->pluck('name')
+            ->all();
+
+        $configContents = self::replaceArrayConfigValue($configContents, 'invite_groups', $inviteGroups);
+
+        $bytesWritten = file_put_contents($configPath, $configContents);
+
+        abort_if($bytesWritten === false, 500, 'Unable to write registration config');
+
+        self::refreshRuntimeConfigurationCache();
+
+        return to_route('staff.banners.index')
+            ->withFragment('registration-settings')
+            ->with('success', 'Registration settings successfully updated');
     }
 
     /**
@@ -154,7 +208,7 @@ class BannerController extends Controller
 
         self::updateEnvironmentValues($envUpdates);
 
-        Artisan::call('config:clear');
+        self::refreshRuntimeConfigurationCache();
 
         return to_route('staff.banners.index')
             ->with('success', 'SMTP settings successfully updated');
@@ -384,5 +438,65 @@ class BannerController extends Controller
         }
 
         return '"'.addcslashes($value, "\\\"").'"';
+    }
+
+    private static function replaceSingleLineConfigValue(string $contents, string $key, bool|int|string $value): string
+    {
+        $pattern = "/('".preg_quote($key, '/')."'\\s*=>\\s*)([^,\\n]+)(,)/";
+
+        $updatedContents = preg_replace_callback(
+            $pattern,
+            static fn (array $matches): string => $matches[1].var_export($value, true).$matches[3],
+            $contents,
+            1,
+            $count
+        );
+
+        abort_if($updatedContents === null || $count !== 1, 500, "Unable to update registration key: {$key}");
+
+        return $updatedContents;
+    }
+
+    /**
+     * @param  array<int, string>  $value
+     */
+    private static function replaceArrayConfigValue(string $contents, string $key, array $value): string
+    {
+        $pattern = "/('".preg_quote($key, '/')."'\\s*=>\\s*)\\[(?:.|\\R)*?\\](,)/U";
+
+        $updatedContents = preg_replace_callback(
+            $pattern,
+            static fn (array $matches): string => $matches[1].self::formatStringArray($value).$matches[2],
+            $contents,
+            1,
+            $count
+        );
+
+        abort_if($updatedContents === null || $count !== 1, 500, "Unable to update registration key: {$key}");
+
+        return $updatedContents;
+    }
+
+    /**
+     * @param  array<int, string>  $value
+     */
+    private static function formatStringArray(array $value): string
+    {
+        if ($value === []) {
+            return '[]';
+        }
+
+        $lines = array_map(
+            static fn (string $item): string => "        ".var_export($item, true).',',
+            $value
+        );
+
+        return "[\n".implode("\n", $lines)."\n    ]";
+    }
+
+    private static function refreshRuntimeConfigurationCache(): void
+    {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
     }
 }
