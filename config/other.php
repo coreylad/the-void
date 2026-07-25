@@ -23,7 +23,7 @@ return [
     |
     */
 
-    'title' => 'UNIT3D',
+    'title' => env('SITE_TITLE', 'UNIT3D'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ return [
     |
     */
 
-    'subTitle' => 'Built On Laravel',
+    'subTitle' => env('SITE_SUBTITLE', 'Built On Laravel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -56,7 +56,7 @@ return [
     |
     */
 
-    'meta_description' => 'Built On Laravel',
+    'meta_description' => env('SITE_META_DESCRIPTION', 'Built On Laravel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -66,7 +66,7 @@ return [
     | Date Site Was Born
     |
     */
-    'birthdate' => 'December 30th 2017',
+    'birthdate' => env('SITE_BIRTHDATE', 'December 30th 2017'),
 
     /*
     |--------------------------------------------------------------------------

@@ -58,37 +58,11 @@ class BannerController extends Controller
      */
     public function updateBranding(UpdateSiteBrandingRequest $request): RedirectResponse
     {
-        $configPath = config_path('other.php');
-        $configContents = file_get_contents($configPath);
-
-        abort_if($configContents === false, 500, 'Unable to read branding config');
-
-        $replacements = [
-            'title'            => (string) $request->string('title'),
-            'subTitle'         => (string) $request->string('subTitle'),
-            'meta_description' => (string) $request->string('meta_description'),
-            'birthdate'        => (string) $request->string('birthdate'),
-        ];
-
-        foreach ($replacements as $key => $value) {
-            $quotedValue = var_export($value, true);
-
-            $configContents = preg_replace(
-                "/('".preg_quote($key, '/')."'\\s*=>\\s*)'(?:\\\\'|[^'])*'(,)/",
-                '$1'.$quotedValue.'$2',
-                $configContents,
-                1,
-                $count
-            );
-
-            abort_if($count !== 1, 500, "Unable to update branding key: {$key}");
-        }
-
-        $bytesWritten = file_put_contents($configPath, $configContents);
-
-        abort_if($bytesWritten === false, 500, 'Unable to write branding config');
-
         self::updateEnvironmentValues([
+            'SITE_TITLE'            => (string) $request->string('title'),
+            'SITE_SUBTITLE'         => (string) $request->string('subTitle'),
+            'SITE_META_DESCRIPTION' => (string) $request->string('meta_description'),
+            'SITE_BIRTHDATE'        => (string) $request->string('birthdate'),
             'DEFAULT_OWNER_EMAIL' => (string) $request->string('owner_email'),
         ]);
 

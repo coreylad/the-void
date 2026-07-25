@@ -172,8 +172,8 @@
 
     .panel__body {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.5rem 0.75rem;
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
         align-content: flex-start;
     }
 
@@ -194,7 +194,9 @@
             margin: 0;
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
-            white-space: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
@@ -220,10 +222,6 @@
 
 @media (max-width: 860px) {
     .dashboard__menus {
-        .panel__body {
-            grid-template-columns: 1fr;
-        }
-
         .form__group--horizontal {
             min-width: 0;
         }
