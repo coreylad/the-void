@@ -164,10 +164,19 @@
                     <p class="form__group form__group--horizontal">
                         <a
                             class="form__button form__button--text"
-                            href="{{ route('staff.banners.index') }}#registration-settings"
+                            href="{{ route('staff.site_access.index') }}"
                         >
                             <i class="{{ config('other.font-awesome') }} fa-user-lock"></i>
-                            Registration settings
+                            Site access settings
+                        </a>
+                    </p>
+                    <p class="form__group form__group--horizontal">
+                        <a
+                            class="form__button form__button--text"
+                            href="{{ route('staff.email_settings.index') }}"
+                        >
+                            <i class="{{ config('other.font-awesome') }} fa-envelope"></i>
+                            Email settings
                         </a>
                     </p>
                 @endif

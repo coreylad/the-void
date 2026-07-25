@@ -720,14 +720,24 @@ Route::middleware(SetLanguage::class)->group(function (): void {
             Route::prefix('banners')->name('banners.')->middleware(CheckForAdmin::class)->group(function (): void {
                 Route::get('/', [App\Http\Controllers\Staff\BannerController::class, 'index'])->name('index');
                 Route::patch('/branding', [App\Http\Controllers\Staff\BannerController::class, 'updateBranding'])->name('branding.update');
-                Route::patch('/branding/registration', [App\Http\Controllers\Staff\BannerController::class, 'updateRegistration'])->name('registration.update');
-                Route::patch('/branding/smtp', [App\Http\Controllers\Staff\BannerController::class, 'updateSmtp'])->name('smtp.update');
-                Route::post('/branding/smtp/test', [App\Http\Controllers\Staff\BannerController::class, 'testSmtp'])->name('smtp.test');
                 Route::get('/create', [App\Http\Controllers\Staff\BannerController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Staff\BannerController::class, 'store'])->name('store');
                 Route::get('/{banner}/edit', [App\Http\Controllers\Staff\BannerController::class, 'edit'])->name('edit');
                 Route::patch('/{banner}', [App\Http\Controllers\Staff\BannerController::class, 'update'])->name('update');
                 Route::delete('/{banner}', [App\Http\Controllers\Staff\BannerController::class, 'destroy'])->name('destroy');
+            });
+
+            // Site Access Settings
+            Route::prefix('site-access')->name('site_access.')->middleware(CheckForAdmin::class)->group(function (): void {
+                Route::get('/', [App\Http\Controllers\Staff\SiteAccessController::class, 'index'])->name('index');
+                Route::patch('/', [App\Http\Controllers\Staff\SiteAccessController::class, 'update'])->name('update');
+            });
+
+            // Email Settings
+            Route::prefix('email-settings')->name('email_settings.')->middleware(CheckForAdmin::class)->group(function (): void {
+                Route::get('/', [App\Http\Controllers\Staff\EmailSettingsController::class, 'index'])->name('index');
+                Route::patch('/', [App\Http\Controllers\Staff\EmailSettingsController::class, 'update'])->name('update');
+                Route::post('/test', [App\Http\Controllers\Staff\EmailSettingsController::class, 'test'])->name('test');
             });
 
             // Backup System

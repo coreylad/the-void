@@ -18,21 +18,15 @@ namespace App\Http\Controllers\Staff;
 
 use App\Helpers\AnimatedImage;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Staff\UpdateRegistrationSettingsRequest;
 use App\Http\Requests\Staff\StoreSiteBannerRequest;
 use App\Http\Requests\Staff\UpdateSiteBrandingRequest;
 use App\Http\Requests\Staff\UpdateSiteBannerRequest;
-use App\Http\Requests\Staff\UpdateSmtpSettingsRequest;
-use App\Mail\TestEmail;
-use App\Models\Group;
 use App\Models\SiteBanner;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Throwable;
 use Illuminate\View\View;
 use Intervention\Image\Facades\Image;
 
@@ -55,29 +49,6 @@ class BannerController extends Controller
                 'meta_description' => (string) config('other.meta_description'),
                 'birthdate'        => (string) config('other.birthdate'),
                 'owner_email'      => (string) config('other.email'),
-            ],
-            'registration' => [
-                'invite_only'                  => (bool) config('other.invite-only'),
-                'application_signups'          => (bool) config('other.application_signups'),
-                'invites_restriced'            => (bool) config('other.invites_restriced'),
-                'invite_expire'                => (int) config('other.invite_expire'),
-                'hours_until_invite_after_2fa' => (int) config('other.hours-until-invite-after-2fa'),
-                'max_unused_user_invites'      => (int) config('other.max_unused_user_invites', 1),
-                'invite_groups'                => config('other.invite_groups', []),
-            ],
-            'groups' => Group::query()->orderBy('position')->pluck('name')->all(),
-            'smtp' => [
-                'mail_mailer'       => (string) config('mail.default'),
-                'mail_host'         => (string) config('mail.mailers.smtp.host'),
-                'mail_port'         => (string) config('mail.mailers.smtp.port'),
-                'mail_encryption'   => (string) (config('mail.mailers.smtp.encryption') ?? 'null'),
-                'mail_username'     => (string) (config('mail.mailers.smtp.username') ?? ''),
-                'mail_ehlo_domain'  => (string) (config('mail.mailers.smtp.local_domain') ?? ''),
-                'mail_from_address' => (string) config('mail.from.address'),
-                'mail_from_name'    => (string) config('mail.from.name'),
-                'mail_sendmail_path'=> (string) config('mail.mailers.sendmail.path'),
-                'mail_log_channel'  => (string) (config('mail.mailers.log.channel') ?? ''),
-                'password_is_set'   => config('mail.mailers.smtp.password') !== null,
             ],
         ]);
     }
@@ -125,95 +96,6 @@ class BannerController extends Controller
 
         return to_route('staff.banners.index')
             ->with('success', 'Site branding details successfully updated');
-    }
-
-    /**
-     * Update global site registration settings.
-     */
-    public function updateRegistration(UpdateRegistrationSettingsRequest $request): RedirectResponse
-    {
-        $inviteGroups = Group::query()
-            ->whereIn('name', $request->collect('invite_groups')->all())
-            ->orderBy('position')
-            ->pluck('name')
-            ->all();
-
-        self::updateEnvironmentValues([
-            'INVITE_ONLY'                  => $request->boolean('invite_only') ? 'true' : 'false',
-            'APPLICATION_SIGNUPS'          => $request->boolean('application_signups') ? 'true' : 'false',
-            'INVITES_RESTRICED'            => $request->boolean('invites_restriced') ? 'true' : 'false',
-            'INVITE_EXPIRE'                => (string) $request->integer('invite_expire'),
-            'HOURS_UNTIL_INVITE_AFTER_2FA' => (string) $request->integer('hours_until_invite_after_2fa'),
-            'MAX_UNUSED_USER_INVITES'      => (string) $request->integer('max_unused_user_invites'),
-            'INVITE_GROUPS'                => implode(',', $inviteGroups),
-        ]);
-
-        self::refreshRuntimeConfigurationCache();
-
-        return to_route('staff.banners.index')
-            ->withFragment('registration-settings')
-            ->with('success', 'Registration settings successfully updated');
-    }
-
-    /**
-     * Update SMTP/email transport settings.
-     */
-    public function updateSmtp(UpdateSmtpSettingsRequest $request): RedirectResponse
-    {
-        $mailEncryption = (string) $request->string('mail_encryption', 'null');
-        $mailEncryption = $mailEncryption === '' ? 'null' : $mailEncryption;
-
-        $envUpdates = [
-            'MAIL_MAILER'       => (string) $request->string('mail_mailer'),
-            'MAIL_FROM_ADDRESS' => (string) $request->string('mail_from_address'),
-            'MAIL_FROM_NAME'    => (string) $request->string('mail_from_name'),
-            'MAIL_ENCRYPTION'   => $mailEncryption,
-            'MAIL_EHLO_DOMAIN'  => $request->string('mail_ehlo_domain')->trim()->toString() !== ''
-                ? (string) $request->string('mail_ehlo_domain')
-                : null,
-            'MAIL_LOG_CHANNEL'  => $request->string('mail_log_channel')->trim()->toString() !== ''
-                ? (string) $request->string('mail_log_channel')
-                : null,
-        ];
-
-        if ($request->string('mail_mailer')->toString() === 'smtp') {
-            $envUpdates['MAIL_HOST'] = (string) $request->string('mail_host');
-            $envUpdates['MAIL_PORT'] = (string) $request->integer('mail_port');
-            $envUpdates['MAIL_USERNAME'] = $request->string('mail_username')->trim()->toString() !== ''
-                ? (string) $request->string('mail_username')
-                : null;
-
-            if ($request->string('mail_password')->trim()->toString() !== '') {
-                $envUpdates['MAIL_PASSWORD'] = (string) $request->string('mail_password');
-            }
-        }
-
-        if ($request->string('mail_mailer')->toString() === 'sendmail') {
-            $envUpdates['MAIL_SENDMAIL_PATH'] = (string) $request->string('mail_sendmail_path');
-        }
-
-        self::updateEnvironmentValues($envUpdates);
-
-        self::refreshRuntimeConfigurationCache();
-
-        return to_route('staff.banners.index')
-            ->with('success', 'SMTP settings successfully updated');
-    }
-
-    /**
-     * Send a test email using the current settings.
-     */
-    public function testSmtp(): RedirectResponse
-    {
-        try {
-            Mail::to(config('other.email'))->send(new TestEmail());
-        } catch (Throwable) {
-            return to_route('staff.banners.index')
-                ->withErrors(['smtp_test' => 'Test email failed. Please review your SMTP settings.']);
-        }
-
-        return to_route('staff.banners.index')
-            ->with('success', 'Test email was sent successfully');
     }
 
     /**
