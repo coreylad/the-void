@@ -49,6 +49,35 @@ class RegisteredUserController extends Controller
     {
         $request->validated();
 
+        $validatingGroupId = Group::query()->where('slug', '=', 'validating')->value('id');
+        $chatStatusId = ChatStatus::query()->value('id');
+
+        $chatroomId = Chatroom::query()
+            ->when(
+                is_numeric((string) config('chat.system_chatroom')),
+                fn ($query) => $query->where('id', '=', (int) config('chat.system_chatroom')),
+                fn ($query) => $query->where('name', '=', config('chat.system_chatroom')),
+            )
+            ->value('id');
+
+        if ($validatingGroupId === null || $chatStatusId === null || $chatroomId === null) {
+            return to_route('registration.create')
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->withErrors('Registration is temporarily unavailable. Please contact staff.');
+        }
+
+        $invite = null;
+
+        if (config('other.invite-only') === true) {
+            $invite = Invite::query()->where('code', '=', $request->code)->first();
+
+            if ($invite === null || $invite->accepted_by !== null) {
+                return to_route('registration.create', ['code' => $request->code])
+                    ->withInput($request->except('password', 'password_confirmation'))
+                    ->withErrors('Invite code is invalid or already used.');
+            }
+        }
+
         $user = User::query()->create([
             'username'    => $request->username,
             'email'       => $request->email,
@@ -57,15 +86,9 @@ class RegisteredUserController extends Controller
             'rsskey'      => md5(random_bytes(60)),
             'uploaded'    => config('other.default_upload'),
             'downloaded'  => config('other.default_download'),
-            'group_id'    => Group::query()->where('slug', '=', 'validating')->soleValue('id'),
-            'chatroom_id' => Chatroom::query()
-                ->when(
-                    \is_int(config('chat.system_chatroom')),
-                    fn ($query) => $query->where('id', '=', config('chat.system_chatroom')),
-                    fn ($query) => $query->where('name', '=', config('chat.system_chatroom')),
-                )
-                ->soleValue('id'),
-            'chat_status_id' => ChatStatus::query()->value('id'),
+            'group_id'    => $validatingGroupId,
+            'chatroom_id' => $chatroomId,
+            'chat_status_id' => $chatStatusId,
         ]);
 
         $user->passkeys()->create(['content' => $user->passkey]);
@@ -74,8 +97,7 @@ class RegisteredUserController extends Controller
 
         $user->emailUpdates()->create();
 
-        if (config('other.invite-only') === true) {
-            $invite = Invite::query()->where('code', '=', $request->code)->first();
+        if ($invite !== null) {
             $invite->update([
                 'accepted_by' => $user->id,
                 'accepted_at' => now(),
