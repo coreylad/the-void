@@ -100,6 +100,20 @@
                 </p>
 
                 <p class="form__group">
+                    <label for="default_style">Default user theme</label>
+                    <select id="default_style" name="default_style" class="form__select" required>
+                        @foreach ($styleOptions as $styleValue => $styleLabel)
+                            <option
+                                value="{{ $styleValue }}"
+                                @selected((int) old('default_style', $branding['default_style']) === $styleValue)
+                            >
+                                {{ $styleLabel }}
+                            </option>
+                        @endforeach
+                    </select>
+                </p>
+
+                <p class="form__group">
                     <button class="form__button form__button--filled">Save branding details</button>
                 </p>
             </form>

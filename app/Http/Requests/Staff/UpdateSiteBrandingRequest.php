@@ -61,6 +61,11 @@ class UpdateSiteBrandingRequest extends FormRequest
                 'email',
                 'max:255',
             ],
+            'default_style' => [
+                'required',
+                'integer',
+                'between:0,12',
+            ],
         ];
     }
 }

@@ -49,6 +49,22 @@ class BannerController extends Controller
                 'meta_description' => (string) config('other.meta_description'),
                 'birthdate'        => (string) config('other.birthdate'),
                 'owner_email'      => (string) config('other.email'),
+                'default_style'    => (int) config('other.default_style'),
+            ],
+            'styleOptions' => [
+                0  => 'Classic Light Theme',
+                1  => 'Galactic Theme',
+                2  => 'Dark Blue Theme',
+                3  => 'Dark Green Theme',
+                4  => 'Dark Pink Theme',
+                5  => 'Dark Purple Theme',
+                6  => 'Dark Red Theme',
+                7  => 'Dark Teal Theme',
+                8  => 'Dark Yellow Theme',
+                9  => 'Cosmic Void',
+                10 => 'Nord',
+                11 => 'Revel',
+                12 => 'Material Design v3 Light',
             ],
         ]);
     }
@@ -63,7 +79,8 @@ class BannerController extends Controller
             'SITE_SUBTITLE'         => (string) $request->string('subTitle'),
             'SITE_META_DESCRIPTION' => (string) $request->string('meta_description'),
             'SITE_BIRTHDATE'        => (string) $request->string('birthdate'),
-            'DEFAULT_OWNER_EMAIL' => (string) $request->string('owner_email'),
+            'DEFAULT_OWNER_EMAIL'   => (string) $request->string('owner_email'),
+            'DEFAULT_SITE_STYLE'    => (string) $request->integer('default_style'),
         ]);
 
         self::refreshRuntimeConfigurationCache();
